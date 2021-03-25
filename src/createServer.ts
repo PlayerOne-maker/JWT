@@ -9,7 +9,9 @@ export default async () => {
         emitSchemaFile: {path:'./src/schema.graphql'},
         validate: false
     })
-    return new ApolloServer({schema})
+    return new ApolloServer({schema,context:({req,res}) =>{
+        return {req,res}
+    }})
 }
 
 
