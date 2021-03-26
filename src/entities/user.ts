@@ -1,29 +1,29 @@
-import {getModelForClass, prop,arrayProp} from '@typegoose/typegoose'
+import {getModelForClass, prop} from '@typegoose/typegoose'
 import {ObjectType,Field,ID} from 'type-graphql'
 import { Roleoptions } from '../types'
 
 @ObjectType({description: 'UserModel'})
 export class User{
     @Field(() => ID)
-    id:String
+    id:string
 
     @Field()
     @prop({required: true,trim:true})
-    username:String
+    username:string
 
     @Field()
     @prop({required: true,trim:true,unique:true})
-    email:String
+    email:string
 
     @Field()
     @prop({required: true})
-    password:String
+    password:string
 
     @prop({default: 0})
     tokenVersion: number
 
     @prop()
-    resetpasswordtoken?: String
+    resetpasswordtoken?: string
 
     @prop()
     resetpasswordtokenExpiry?: number //มีเคลื่อนหมาย ? เพราะเป็น optional
@@ -35,8 +35,8 @@ export class User{
     googleId? : string
 
     @Field(() =>[String])
-    @arrayProp({
-        items: String,
+    @prop({
+        type: String,
         enum: Roleoptions,
         default: [Roleoptions.client]
     })
