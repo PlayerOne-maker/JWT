@@ -1,12 +1,15 @@
 import { Usermodel } from "../entities/user"
+import { AppRequest } from "../types";
 
-export const isAuthenticated = async (userId: string,tokenVersion?:number) =>{
+export const isAuthenticated = async (req: AppRequest) =>{
 
-    const user = await Usermodel.findById(userId)
+    if(!req.userId) throw new Error("Please Login to process");
+
+    const user = await Usermodel.findById(req.userId)
             
     if(!user) throw new Error('User not found')
 
-    if(user.tokenVersion !== tokenVersion) throw new Error('Not Authicated')
+    if(user.tokenVersion !== req.tokenVersion) throw new Error('Not Authicated')
 
     return user
 }

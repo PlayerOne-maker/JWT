@@ -12,7 +12,7 @@ export class User{
     username:string
 
     @Field()
-    @prop({required: true,trim:true,unique:true})
+    @prop({required: true,trim:true,unique:true,lowercase:true})
     email:string
 
     @Field()
@@ -47,4 +47,5 @@ export class User{
     createdAt: Date
 }
 
+    
 export const Usermodel = getModelForClass(User)

@@ -1,11 +1,24 @@
-import { Resolver, Query, Mutation, Arg, Ctx } from 'type-graphql'
+import { Resolver, Query, Mutation, Arg, Ctx, ObjectType, Field } from 'type-graphql'
 import { User, Usermodel } from '../entities/user';
 import { validPassword, varlidateEmail, varlidateUsername } from '../utils/varlidate';
 import bcrypt from 'bcryptjs'
+import {config} from 'dotenv'
+config()
 
 import { createToken, sendToken } from '../utils/token';
-import { AppContext } from '../types';
+import { AppContext, Roleoptions } from '../types';
 import { isAuthenticated } from '../utils/authhandler';
+
+import {randomBytes} from 'crypto'
+import sendgrid,{MailDataRequired} from '@sendgrid/mail'
+
+sendgrid.setApiKey(process.env.SENDGRID_KEY!);
+
+@ObjectType()
+export class ResponseMessage {
+    @Field()
+    message:String
+}
 
 @Resolver()
 
@@ -24,12 +37,11 @@ export class AuthResolvers {
         @Ctx(){req} : AppContext)
     : Promise<User | null> {
         try {
-
-            if(!req.userId) throw new Error('Please Login')
             // const user = await Usermodel.findById(userId)
-            const user = await isAuthenticated(req.userId,req.tokenVersion)
+            const user = await isAuthenticated(req)
             // if(!user) throw new Error('User not found')
 
+            // if(!user) throw new Error('Not Authi')
             return user
             
         } catch (error) {
@@ -68,7 +80,7 @@ export class AuthResolvers {
 
             const hashPassword = await bcrypt.hash(password, 10)
 
-            const newUser = await Usermodel.create({
+            const newUser = await Usermodel.create<Pick<User,'username'| 'email'| 'password'>>({
                 username,
                 email,
                 password: hashPassword,
@@ -119,6 +131,173 @@ export class AuthResolvers {
 
             throw error
 
+        }
+    }
+
+    @Mutation(() => ResponseMessage ,{nullable:true})
+    async sighOut(
+        @Ctx() { req,res }: AppContext
+    ):Promise<ResponseMessage | null>{
+        try {
+
+            const user = await Usermodel.findById(req.userId)
+
+            if(!user) return null
+
+            user.tokenVersion = user.tokenVersion + 1
+
+            await user.save()
+
+            res.clearCookie(process.env.COOKIE_NAME!)
+
+            return {message: "Logout success" }
+
+        } catch (error) {
+
+            throw error
+
+        }
+    }
+
+    @Mutation(() => ResponseMessage ,{nullable:true})
+    async requestResetPassword(
+        @Arg('email') email: string
+    ):Promise<ResponseMessage | null>{
+        try {
+
+            if(!email) throw new Error('กรูณาใส่ Email')
+
+            const user = await Usermodel.findOne({email})
+
+            if(!user) throw new Error('ไม่พบ Email')
+
+            const resetpasswordtoken = randomBytes(16).toString('hex')
+
+            const resetpasswordtokenExpiry = Date.now() + 1000*60*30 //วินาที * 1 นาที * 30 นาที
+
+            const updateUser = await Usermodel.findOneAndUpdate({email} ,
+                {resetpasswordtoken,resetpasswordtokenExpiry} ,
+                {new:true})
+
+            if(!updateUser) throw new Error('sorry ,cannot Process ')
+            
+            const message: MailDataRequired = {
+                from: 'oofza93@gmail.com',
+                to: email,
+                subject: 'Reset Password From HR-Sinotrans',
+                html:`
+                <div>
+                    <p>Please click below link to reset password </p>
+                    <a href='http://localhost:5000/?resetToken=${resetpasswordtoken}' target='blank'>Click here</a>
+                </div>
+                `
+            }
+
+            const res = await sendgrid.send(message)
+
+            if(!res || res[0]?.statusCode !== 202) throw new Error("Sorry We Can't Send");
+
+            return {message: "Please check your email", }
+
+        } catch (error) {
+
+            throw error
+
+        }
+    }
+
+    @Mutation(() => ResponseMessage ,{nullable:true})
+    async resetPassword(
+        @Arg('password') password: string,
+        @Arg('token') token: string
+    ):Promise<ResponseMessage | null>{
+        try {
+            if(!password) throw new Error('กรูณาใส่ Password')
+
+            if(!token) throw new Error("Can't process");
+            
+            const user = await Usermodel.findOne({resetpasswordtoken:token})
+
+            if(!user) throw new Error("Can't process")
+
+            if(!user.resetpasswordtokenExpiry) throw new Error("Can't process");
+
+            const isTokenValid = Date.now() < user.resetpasswordtokenExpiry
+
+            if(!isTokenValid) throw new Error("Token is Expiry");
+            
+            const newpassword = await bcrypt.hash(password, 10)
+
+            const updateUser = await Usermodel.findOneAndUpdate({email: user.email} ,
+                {password : newpassword
+                ,resetpasswordtokenExpiry:undefined,
+                resetpasswordtoken:undefined} ,
+                {new:true})
+
+            if(!updateUser) throw new Error('sorry ,cannot Process ')
+
+            return {message: "Succesfully", }
+
+        } catch (error) {
+
+            throw error
+
+        }
+    }
+
+    @Mutation(() => User,{nullable: true})
+    async updateRoles(
+        @Arg('newRoles', () => [String])newRoles: Roleoptions[],
+        @Arg('userId') userId: string,
+        @Ctx(){req} : AppContext
+    ):Promise<User | null>{
+        try {
+
+            const admin = await isAuthenticated(req)
+
+            const SuperAdmin = admin.roles.includes(Roleoptions.superadmin)
+
+            if(!SuperAdmin) throw new Error("You don't have permission!!!");
+
+            const user = await Usermodel.findById(userId)
+
+            if(!user) throw new Error("User not found!!!");
+            
+            user.roles = newRoles
+
+            await user.save()
+
+            return user
+
+        } catch (error) {
+            throw new Error("can't process");
+            
+        }
+    }
+
+    @Mutation(() => ResponseMessage,{nullable: true})
+    async deleteUser(
+        @Arg('userId') userId: string,
+        @Ctx(){req} : AppContext
+    ):Promise<ResponseMessage | null>{
+        try {
+            
+
+            const admin = await isAuthenticated(req)
+
+            const SuperAdmin = admin.roles.includes(Roleoptions.superadmin)
+
+            if(!SuperAdmin) throw new Error("You don't have permission!!!");
+
+            const user = await Usermodel.findByIdAndDelete(userId)
+
+            if(!user) throw new Error("User not found!!!");
+
+            return {message: `User ${user.username} has been remove!!!`}
+
+        } catch (error) {
+            throw new Error("can't process");
+            
         }
     }
 }

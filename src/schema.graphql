@@ -11,11 +11,20 @@ scalar DateTime
 type Mutation {
   sighUp(password: String!, email: String!, username: String!): User
   sighIn(password: String!, email: String!): User
+  sighOut: ResponseMessage
+  requestResetPassword(email: String!): ResponseMessage
+  resetPassword(token: String!, password: String!): ResponseMessage
+  updateRoles(userId: String!, newRoles: [String!]!): User
+  deleteUser(userId: String!): ResponseMessage
 }
 
 type Query {
   users: [User]!
   me: User
+}
+
+type ResponseMessage {
+  message: String!
 }
 
 """UserModel"""
