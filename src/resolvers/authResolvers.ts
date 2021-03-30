@@ -24,9 +24,17 @@ export class ResponseMessage {
 
 export class AuthResolvers {
     @Query(() => [User], { nullable: 'items' }) // = [User]!
-    async users(): Promise<User[] | null> {
+    async users(@Ctx(){req} : AppContext): Promise<User[] | null> {
         try {
-            return Usermodel.find()
+
+            const user = await isAuthenticated(req)
+
+            const isAuthorized = user.roles.includes(Roleoptions.superadmin || user.roles.includes(Roleoptions.admin))
+
+            if(!isAuthorized) throw new Error("You don't permission");
+            
+            return Usermodel.find().sort({createdAt: 'desc'})
+            
         } catch (error) {
             throw error
         }
