@@ -58,7 +58,7 @@ export class AuthResolvers {
     }
 
     @Mutation(() => User,{nullable:true})
-    async sighUp(
+    async signup(
         @Arg('username') username: string,
         @Arg('email') email: string,
         @Arg('password') password: string,
@@ -111,7 +111,7 @@ export class AuthResolvers {
     }
 
     @Mutation(() => User,{nullable:true})
-    async sighIn(
+    async signin(
         @Arg('email') email: string,
     @Arg('password') password: string,
     @Ctx() { res }: AppContext
@@ -143,7 +143,7 @@ export class AuthResolvers {
     }
 
     @Mutation(() => ResponseMessage ,{nullable:true})
-    async sighOut(
+    async signout(
         @Ctx() { req,res }: AppContext
     ):Promise<ResponseMessage | null>{
         try {

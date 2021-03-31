@@ -3,10 +3,10 @@ import {Profile as FBProfile} from 'passport-facebook'
 import {Profile as GoogleProfile} from 'passport-google-oauth20'
 
 export enum Roleoptions{
-    client = 'Client',
-    itemeditor = 'Itemeditor',
-    admin = 'Admin',
-    superadmin = "SuperAdmin"
+    client = 'CLIENT',
+    itemeditor = 'ITEMEDITOR',
+    admin = 'ADMIN',
+    superadmin = "SUPERADMIN"
 }
 
 export interface AppRequest extends Request{

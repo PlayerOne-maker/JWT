@@ -15,7 +15,7 @@ PasssportGoogle()
 
 const startServer = async () => {
 
-    //conent to database
+    //connect to database
     await mongoose.connect(`mongodb+srv://${DB_Username}:${DB_Password}@${DB_ENDPOINT}/${DB_Name}?
     retryWrites=true&w=majority`, {
         useCreateIndex: true,
@@ -50,7 +50,10 @@ const startServer = async () => {
 
     const server = await createServer()
 
-    server.applyMiddleware({ app })
+    server.applyMiddleware({ 
+        app,
+        cors:{origin:FRONTEND_URI, credentials: true}
+    })
 
     app.listen({ port: Port }, () => console.log(`Start Server at Port ${Port} http://localhost:5000${server.graphqlPath}`))
 }

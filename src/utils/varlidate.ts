@@ -1,7 +1,7 @@
 export const varlidateUsername = (username: string) => {
     const fmtUsername = username.trim()
 
-    return fmtUsername.length >= 5 && fmtUsername.length <= 60  
+    return fmtUsername.length >= 3 && fmtUsername.length <= 60  
 }
 
 export const varlidateEmail = (email: string) => {
