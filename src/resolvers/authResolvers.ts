@@ -29,7 +29,7 @@ export class AuthResolvers {
 
             const user = await isAuthenticated(req)
 
-            const isAuthorized = user.roles.includes(Roleoptions.superadmin || user.roles.includes(Roleoptions.admin))
+            const isAuthorized = user.roles.includes(Roleoptions.superadmin) || user.roles.includes(Roleoptions.admin)
 
             if(!isAuthorized) throw new Error("You don't permission");
             
@@ -196,7 +196,7 @@ export class AuthResolvers {
                 html:`
                 <div>
                     <p>Please click below link to reset password </p>
-                    <a href='http://localhost:5000/?resetToken=${resetpasswordtoken}' target='blank'>Click here</a>
+                    <a href='http://localhost:3000/?resetToken=${resetpasswordtoken}' target='blank'>Click here</a>
                 </div>
                 `
             }

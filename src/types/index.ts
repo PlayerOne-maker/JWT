@@ -5,7 +5,7 @@ import {Profile as GoogleProfile} from 'passport-google-oauth20'
 export enum Roleoptions{
     client = 'CLIENT',
     itemeditor = 'ITEMEDITOR',
-    admin = 'ADMIN',
+    admin = "ADMIN",
     superadmin = "SUPERADMIN"
 }
 
