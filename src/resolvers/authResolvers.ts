@@ -31,7 +31,7 @@ export class AuthResolvers {
 
             const isAuthorized = user.roles.includes(Roleoptions.superadmin) || user.roles.includes(Roleoptions.admin)
 
-            if(!isAuthorized) throw new Error("You don't permission");
+            if(!isAuthorized) throw new Error("You don't have permission");
             
             return Usermodel.find().sort({createdAt: 'desc'})
             

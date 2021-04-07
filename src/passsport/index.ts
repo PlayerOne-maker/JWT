@@ -9,7 +9,7 @@ const { FACEBOOK_ID, FACEBOOK_SECERT,FACEBOOK_CALLBACK_ROUTE ,Port,GOOGLE_ID,GOO
 const FBConfig: FBStrategyWithRequest = {
     clientID: FACEBOOK_ID!,
     clientSecret: FACEBOOK_SECERT!,
-    callbackURL: `http://localhost:${Port}/${FACEBOOK_CALLBACK_ROUTE}`,
+    callbackURL: `http://localhost:${Port}${FACEBOOK_CALLBACK_ROUTE}`,
     profileFields:['id' , 'email','displayName','name'],
     passReqToCallback: true
 }
@@ -34,7 +34,7 @@ export const PasssportFB = () =>
 const GoogleConfig: GoogleStrategyWithReq = {
     clientID: GOOGLE_ID!,
     clientSecret: GOOGLE_SECERT!,
-    callbackURL: `http://localhost:${Port}/${GOOGLE_CALLBACK_ROUTE}`,
+    callbackURL: `http://localhost:${Port}${GOOGLE_CALLBACK_ROUTE}`,
     passReqToCallback: true
 }
 
